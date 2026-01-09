@@ -1,0 +1,34 @@
+// backend/utils/e2Upload.js
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import dotenv from "dotenv";
+dotenv.config();
+
+const s3 = new S3Client({
+  region: "us-east-1", // required but ignored by e2
+  endpoint: process.env.E2_ENDPOINT,
+  credentials: {
+    accessKeyId: process.env.E2_ACCESS_KEY,
+    secretAccessKey: process.env.E2_SECRET_KEY,
+  },
+  forcePathStyle: true, // needed for e2
+});
+
+// ✅ Folder where images should be uploaded
+const UPLOAD_FOLDER = "car/";
+
+export const uploadToE2 = async (file) => {
+  const key = `${UPLOAD_FOLDER}${file.originalname}`; // <--- add folder prefix
+
+  const params = {
+    Bucket: process.env.E2_BUCKET,
+    Key: key,
+    Body: file.buffer,
+    ContentType: file.mimetype,
+  };
+
+  const command = new PutObjectCommand(params);
+  await s3.send(command);
+
+  // Return public URL
+  return `${process.env.E2_ENDPOINT}/${process.env.E2_BUCKET}/${key}`;
+};
