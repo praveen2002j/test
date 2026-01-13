@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Damage Model Test</title>
+</head>
+<body style="background:#111;color:white;font-family:sans-serif;padding:20px">
+
+  <h2>🚗 Damage Model Test</h2>
+
+  <input type="file" id="file" />
+  <button onclick="upload()">Upload & Predict</button>
+
+  <pre id="output"></pre>
+
+  <img id="resultImg" style="max-width:100%;margin-top:20px;border:2px solid red"/>
+
+  <script>
+    async function upload() {
+      const fileInput = document.getElementById("file");
+      const file = fileInput.files[0];
+
+      if (!file) return alert("Select an image");
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      document.getElementById("output").innerText = "⏳ Predicting...";
+
+      const res = await fetch("http://127.0.0.1:8000/predict-file", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await res.json();
+
+      document.getElementById("output").innerText =
+        JSON.stringify(data.predictions, null, 2);
+
+      if (data.annotated_image) {
+        document.getElementById("resultImg").src =
+          "data:image/jpeg;base64," + data.annotated_image;
+      }
+    }
+  </script>
+
+</body>
+</html>
