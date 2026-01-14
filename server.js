@@ -13,7 +13,8 @@ app.use(cors());
 const upload = multer();
 
 // 🔥 DAMAGE MODEL ONLY
-const DAMAGE_URL = "http://127.0.0.1:8000/predict-file";
+const DAMAGE_URL = "https://test2-gjo9.onrender.com/predict-file";
+// const DAMAGE_URL = "http://127.0.0.1:8000/predict-file";
 
 // Supabase
 const supabase = createClient(
@@ -45,7 +46,7 @@ app.post("/upload", upload.single("image"), async (req, res) => {
 
     const damageRes = await axios.post(DAMAGE_URL, form, {
       headers: form.getHeaders(),
-      timeout: 30000,
+      timeout: 120000,  //2mins
     });
 
     const preds = damageRes.data.predictions || [];
