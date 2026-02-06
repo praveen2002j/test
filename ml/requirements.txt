@@ -1,6 +1,0 @@
-ultralytics
-onnxruntime
-numpy
-fastapi
-uvicorn
-opencv-python-headless

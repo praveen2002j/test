@@ -1,47 +1,118 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Damage Model Test</title>
-</head>
-<body style="background:#111;color:white;font-family:sans-serif;padding:20px">
-
-  <h2>🚗 Damage Model Test</h2>
-
-  <input type="file" id="file" />
-  <button onclick="upload()">Upload & Predict</button>
-
-  <pre id="output"></pre>
-
-  <img id="resultImg" style="max-width:100%;margin-top:20px;border:2px solid red"/>
-
-  <script>
-    async function upload() {
-      const fileInput = document.getElementById("file");
-      const file = fileInput.files[0];
-
-      if (!file) return alert("Select an image");
-
-      const formData = new FormData();
-      formData.append("file", file);
-
-      document.getElementById("output").innerText = "⏳ Predicting...";
-
-      const res = await fetch("http://127.0.0.1:8000/predict-file", {
-        method: "POST",
-        body: formData
-      });
-
-      const data = await res.json();
-
-      document.getElementById("output").innerText =
-        JSON.stringify(data.predictions, null, 2);
-
-      if (data.annotated_image) {
-        document.getElementById("resultImg").src =
-          "data:image/jpeg;base64," + data.annotated_image;
-      }
+  <meta charset="UTF-8" />
+  <title>🚗 Car Damage Detection Test</title>
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      padding: 20px;
     }
-  </script>
+    button {
+      padding: 10px 16px;
+      background: #e50914;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    img {
+      max-width: 100%;
+      margin-top: 20px;
+      border: 2px solid red;
+    }
+    pre {
+      background: #222;
+      padding: 10px;
+      margin-top: 15px;
+      overflow-x: auto;
+      font-size: 13px;
+    }
+    .ok { color: #00ff88; }
+    .warn { color: #ff4444; }
+    .info { color: #ffaa00; }
+  </style>
+</head>
+<body>
+
+<h2>🚗 Car → Damage Detection Pipeline</h2>
+
+<input type="file" id="file" accept="image/*" />
+<br/>
+<button onclick="upload()">Upload & Predict</button>
+
+<pre id="status" class="info">Waiting…</pre>
+<pre id="output"></pre>
+
+<img id="resultImg" />
+
+<script>
+async function upload() {
+  const fileInput = document.getElementById("file");
+  const file = fileInput.files[0];
+  if (!file) {
+    alert("Please select an image");
+    return;
+  }
+
+  const formData = new FormData();
+
+  // ✅ MUST MATCH FastAPI: file: UploadFile
+  formData.append("file", file);
+
+  const status = document.getElementById("status");
+  const output = document.getElementById("output");
+  const img = document.getElementById("resultImg");
+
+  status.className = "info";
+  status.innerText = "⏳ Processing image…";
+  output.innerText = "";
+  img.src = "";
+
+  try {
+    const res = await fetch("http://127.0.0.1:8000/predict-file", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      status.className = "warn";
+      status.innerText = "❌ Server error";
+      output.innerText = JSON.stringify(data, null, 2);
+      return;
+    }
+
+    if (data.carDetected === false) {
+      status.className = "warn";
+      status.innerText = "🚫 No car detected";
+      return;
+    }
+
+    if (data.damageFound) {
+      status.className = "warn";
+      status.innerText = "⚠️ Damage Found";
+    } else {
+      status.className = "ok";
+      status.innerText = "✅ No Damage Found";
+    }
+
+    output.innerText = JSON.stringify(data.predictions, null, 2);
+
+    if (data.annotated_image) {
+      img.src = "data:image/jpeg;base64," + data.annotated_image;
+    }
+
+  } catch (err) {
+    status.className = "warn";
+    status.innerText = "❌ Network error";
+    output.innerText = err.toString();
+  }
+}
+</script>
 
 </body>
 </html>
