@@ -14,7 +14,7 @@ const upload = multer();
 
 // 🔥 DAMAGE MODEL ONLY
 //const DAMAGE_URL = "https://test2-gjo9.onrender.com/predict-file";
-const DAMAGE_URL = "https://praveen2501-new-car-damage-detection-api.hf.space/predict-file"; -- latest
+const DAMAGE_URL = "https://praveen2501-new-car-damage-detection-api.hf.space/predict-file";
 // const DAMAGE_URL = "http://127.0.0.1:8000/predict-file";
 console.log("🚨 DAMAGE_URL USED BY BACKEND:", DAMAGE_URL);
 // Supabase
